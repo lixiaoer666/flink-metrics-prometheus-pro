@@ -66,14 +66,18 @@ public class PrometheusPushGatewayReporter extends AbstractPrometheusReporter im
     public void report() {
         try {
             CollectorRegistry cr = new CollectorRegistry();
+            Boolean pushFlag = false;
             for(String metricsName : this.collectorsWithCountByMetricName.keySet()){
                 for (String filterName : filterMetrics){
                     if (metricsName.contains(filterName)){
                         cr.register(this.collectorsWithCountByMetricName.get(metricsName).getKey());
+                        pushFlag = true;
                     }
                 }
             }
-            pushGateway.push(cr, jobName, groupingKey);
+            if (pushFlag){
+                pushGateway.push(cr, jobName, groupingKey);
+            }
         } catch (Exception e) {
             log.warn(
                     "Failed to push metrics to PushGateway with jobName {}, groupingKey {}.",
